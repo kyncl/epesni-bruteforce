@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import "../style/App.css";
 import { HashInput } from "./HashInput";
 import { UnhashInput } from "./UnhashInput";
-import { Cajovna } from "./Cajovna";
 
 export const chartSet = [
     "a", "b", "c", "d",
@@ -27,9 +26,6 @@ function App() {
             case 1:
                 setSection(<UnhashInput />)
                 break;
-            case 2:
-                setSection(<Cajovna />)
-                break;
             default:
                 break;
         }
@@ -44,7 +40,6 @@ function App() {
             <div>
                 <button className="m-2" onClick={() => { setCurrentSectionId(0) }}>Hash input</button>
                 <button className="m-2" onClick={() => { setCurrentSectionId(1) }}>Get input from hash</button>
-                <button className="m-2" onClick={() => { setCurrentSectionId(2) }}>Čajovna ehm velice <i>legalni</i></button>
             </div>
             {section}
         </main>
