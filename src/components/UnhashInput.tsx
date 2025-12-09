@@ -1,29 +1,34 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CopyToClipboard } from "./CopyToClipboard";
 import { invoke } from "@tauri-apps/api/core";
 import { chartSet } from "./App";
 
-export const UnhashInput = () => {
+export const UnhashInput = ({ classList }: { classList?: string }) => {
     const [result, setResult] = useState("");
     const [hash, setHash] = useState("");
     const [pepper, setPepper] = useState("");
 
-    useEffect(() => {
-        const unhashValue = async () => {
-            if (hash != "") {
-                const unhash: string = await invoke("unhash", {
+    const unhashValue = async () => {
+        if (hash != "") {
+            console.log(
+                {
                     hash: hash,
-                    possibleChars: chartSet,
+                    charSet: chartSet,
                     pepper: pepper
-                });
-                setResult(unhash);
-            }
+                }
+            );
+            const unhash: string = await invoke("unhash", {
+                hash: hash,
+                charSet: chartSet,
+                pepper: pepper
+            });
+
+            setResult(unhash);
         }
-        unhashValue();
-    }, [hash]);
+    }
 
     return (
-        <div className="flex flex-col justify-center items-center mt-10 w-full">
+        <div className={`flex flex-col justify-center items-center mt-10 w-full ${classList}`}>
             <h2 className="sm:text-3xl text-lg text-amber-500">Write your hash</h2>
             <textarea className="text-xl dark:bg-black/20 p-2 m-5 w-full md:w-3xl"
                 onChange={(event) => {
@@ -35,7 +40,7 @@ export const UnhashInput = () => {
                 <input type="text" className="w-full md:w-3xl mt-2"
                     onChange={(e) => {
                         const val = e.target.value;
-                        if (!val) setPepper(val)
+                        if (val) setPepper(val)
                     }} />
             </div>
             <div className="flex items-center flex-col mt-5">
@@ -45,6 +50,14 @@ export const UnhashInput = () => {
                     <CopyToClipboard text={result} customClass="absolute right-1" />
                 </div>
             </div>
+            <button className="mt-5" onClick={(_) => {
+                const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
+                if (wantsUnhash) {
+                    unhashValue();
+                }
+            }}>
+                Unhash
+            </button>
 
             <div className="flex items-center flex-col mt-5">
                 <h2 className="sm:text-2xl text-xs">Load csv</h2>

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { hashPassword } from "../lib/hashing";
 import { CopyToClipboard } from "./CopyToClipboard";
 
-export const HashInput = () => {
+export const HashInput = ({ classList }: { classList?: string }) => {
     const [result, setResutlt] = useState("");
     const [input, setInput] = useState("");
 
@@ -16,7 +16,7 @@ export const HashInput = () => {
     }, [input]);
 
     return (
-        <div className="flex flex-col justify-center items-center mt-10">
+        <div className={`flex flex-col justify-center items-center mt-10 ${classList}`} >
             <h2 className="sm:text-3xl text-lg text-cyan-500">Write text to be hashed</h2>
             <textarea className="text-xl dark:bg-black/20 p-2 m-5 w-full md:w-3xl"
                 onChange={(event) => {
@@ -28,6 +28,6 @@ export const HashInput = () => {
                 <input type="text" disabled className="w-full md:w-3xl" value={result} />
                 <CopyToClipboard text={result} customClass="absolute right-1" />
             </div>
-        </div>
+        </div >
     );
 }

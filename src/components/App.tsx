@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "../style/App.css";
 import { HashInput } from "./HashInput";
 import { UnhashInput } from "./UnhashInput";
@@ -16,20 +16,11 @@ export const chartSet = [
 ];
 
 function App() {
-    const [section, setSection] = useState(<HashInput />);
-    const [currentSectionId, setCurrentSectionId] = useState(0);
-    useEffect(() => {
-        switch (currentSectionId) {
-            case 0:
-                setSection(<HashInput />)
-                break;
-            case 1:
-                setSection(<UnhashInput />)
-                break;
-            default:
-                break;
-        }
-    }, [currentSectionId]);
+    /*
+    * section 0 == hash input
+    * section 1 == unhash input 
+    * */
+    const [section, setSection] = useState(0);
 
     return (
         <main className="flex items-center flex-col">
@@ -38,10 +29,11 @@ function App() {
                 jelikoz je to pro studiini ucely lmao
             </h1>
             <div>
-                <button className="m-2" onClick={() => { setCurrentSectionId(0) }}>Hash input</button>
-                <button className="m-2" onClick={() => { setCurrentSectionId(1) }}>Get input from hash</button>
+                <button className="m-2" onClick={() => { setSection(0) }}>Hash input</button>
+                <button className="m-2" onClick={() => { setSection(1) }}>Get input from hash</button>
             </div>
-            {section}
+            <HashInput classList={`${section === 0 ? "" : "hidden"}`} />
+            <UnhashInput classList={`${section === 1 ? "" : "hidden"}`} />
         </main>
     );
 }
