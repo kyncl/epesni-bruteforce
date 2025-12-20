@@ -12,56 +12,67 @@ use sha2::{Digest, Sha256};
 use crate::hashing::digit_manipulation::{incerment_digits, offset_to_char_indexes};
 
 pub async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
-    println!("hash: {}\npossible_chars: {:?}", hash, &char_set);
+    println!("hash: {}", hash);
+    unhash_blocking(&hash, &char_set, pepper.as_deref())
+}
 
-    // each digit has it's own index of possible character
-    let mut tasks = vec![];
-    let did_finish = Arc::new(AtomicBool::new(false));
+fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
+    let pepper_bytes = pepper.unwrap_or("").as_bytes();
+    let target_hash = hex_to_bytes(hash);
+    let char_bytes: Vec<&[u8]> = char_set.iter().map(|s| s.as_bytes()).collect();
+    let base = char_bytes.len();
+
+    let found = Arc::new(AtomicBool::new(false));
     let now = Instant::now();
 
-    for thread_num in 0..500_000 {
-        if did_finish.load(Ordering::Relaxed) {
-            break;
-        }
-
-        let char_set_clone = char_set.clone();
-        let hash_clone = hash.clone();
-        let pepper_clone = pepper.clone();
-        let did_finish_clone = Arc::clone(&did_finish);
-
-        let task = tokio::task::spawn(async move {
-            let result = process_chunk(
-                100,
-                char_set_clone,
-                hash_clone,
-                pepper_clone,
-                (thread_num * 100) as usize,
-                did_finish_clone,
-            )
-            .await;
-            result
-        });
-        tasks.push(task);
-    }
-
-    let (mut finished_tasks, mut unfinished_tasks): (Vec<_>, Vec<_>) =
-        tasks.par_iter().partition(|task| task.is_finished());
-    while unfinished_tasks.len() != 0 {
-        (finished_tasks, unfinished_tasks) = tasks.par_iter().partition(|task| task.is_finished());
-        for task in finished_tasks {
-            let possible_result = task.await;
-            if let Ok(result) = possible_result {
-                if let Some(result) = result {
-                    println!("answer {}", result);
-                    println!("process took {:.2?}", now.elapsed());
-                    return result;
-                }
-            } else {
-                panic!("error in thread");
+    for length in 1..=20 {
+        // pretty much magical number
+        let total: usize = base.pow(length as u32);
+        let result = (0..total).into_par_iter().find_map_any(|idx| {
+            if found.load(Ordering::Relaxed) {
+                return None;
             }
+
+            let mut input = Vec::with_capacity(pepper_bytes.len() + length * 4);
+            input.extend_from_slice(pepper_bytes);
+
+            let mut remaining = idx;
+            for _ in 0..length {
+                input.extend_from_slice(char_bytes[remaining % base]);
+                remaining /= base;
+            }
+
+            let hash_result = Sha256::digest(&input);
+            if hash_result.as_slice() == target_hash {
+                found.store(true, Ordering::Relaxed);
+                let result = String::from_utf8(input);
+                if let Ok(result) = result {
+                    println!("Found {}", result);
+                    return Some(result);
+                } else {
+                    eprintln!("Couldn't convert input");
+                    return None;
+                }
+            }
+            None
+        });
+
+        if let Some(answer) = result {
+            println!("answer {}", answer);
+            println!("took {:.2?}", now.elapsed());
+            return answer;
         }
     }
-    format!("unknown")
+
+    "unknown".to_string()
+}
+
+fn hex_to_bytes(hex: &str) -> [u8; 32] {
+    let mut bytes = [0u8; 32];
+    for (i, chunk) in hex.as_bytes().chunks(2).enumerate() {
+        bytes[i] = u8::from_str_radix(std::str::from_utf8(chunk).unwrap(), 16).unwrap();
+    }
+    bytes
 }
 
 async fn process_chunk(

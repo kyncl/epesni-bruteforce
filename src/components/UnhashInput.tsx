@@ -1,30 +1,17 @@
 import { useState } from "react";
 import { CopyToClipboard } from "./CopyToClipboard";
-import { invoke } from "@tauri-apps/api/core";
-import { chartSet } from "./App";
+import { charSet } from "./App";
+import { unhashValue } from "../lib/unhashing";
+
 
 export const UnhashInput = ({ classList }: { classList?: string }) => {
     const [result, setResult] = useState("");
-    const [hash, setHash] = useState("");
+    const [hash, setHash] = useState<string | null>(null);
     const [pepper, setPepper] = useState("");
 
-    const unhashValue = async () => {
-        if (hash != "") {
-            console.log(
-                {
-                    hash: hash,
-                    charSet: chartSet,
-                    pepper: pepper
-                }
-            );
-            const unhash: string = await invoke("unhash", {
-                hash: hash,
-                charSet: chartSet,
-                pepper: pepper
-            });
-
-            setResult(unhash);
-        }
+    const unhashHandle = async () => {
+        const unhash = await unhashValue({ hash, pepper, charSet });
+        setResult(unhash ?? "");
     }
 
     return (
@@ -53,17 +40,12 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
             <button className="mt-5" onClick={(_) => {
                 const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
                 if (wantsUnhash) {
-                    unhashValue();
+                    unhashHandle();
                 }
             }}>
                 Unhash
             </button>
 
-            <div className="flex items-center flex-col mt-5">
-                <h2 className="sm:text-2xl text-xs">Load csv</h2>
-                <p className="text-lg">As long as it has email and password it will do the trick</p>
-                <input type="file" className="mt-5 text-center" />
-            </div>
         </div>
     );
 };

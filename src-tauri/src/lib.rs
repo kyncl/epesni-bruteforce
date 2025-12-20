@@ -1,10 +1,24 @@
-use crate::hashing::unhashing;
+use crate::{
+    hashing::{table_unhashing, unhashing},
+    user::User,
+};
 
 pub mod hashing;
+pub mod user;
 
 #[tauri::command]
 async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
     unhashing::unhash(hash, char_set, pepper).await
+}
+
+#[tauri::command]
+async fn unhash_table(
+    users: Vec<User>,
+    char_set: Vec<String>,
+    pepper: Option<String>,
+    known_hashes: HashMap<String, String>,
+) -> Vec<User> {
+    table_unhashing::unhash_table(users, char_set, pepper, known_hashes).await
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
