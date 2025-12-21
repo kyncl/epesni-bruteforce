@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -11,12 +12,29 @@ use sha2::{Digest, Sha256};
 
 use crate::hashing::digit_manipulation::{incerment_digits, offset_to_char_indexes};
 
-pub async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
+pub fn unhash(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
     println!("hash: {}", hash);
-    unhash_blocking(&hash, &char_set, pepper.as_deref())
+    unhash_blocking(hash, &char_set, pepper.as_deref(), None)
 }
 
-fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
+pub fn unhash_table(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
+    unhash_blocking(hash, char_set, pepper, None)
+}
+
+fn unhash_blocking(
+    hash: &str,
+    char_set: &[String],
+    pepper: Option<&str>,
+    known_hashes: Option<Arc<std::sync::Mutex<HashMap<String, String>>>>,
+) -> String {
+    if let Some(known_hashes) = &known_hashes {
+        let known = known_hashes.lock().unwrap();
+        if let Some(password) = known.get(hash) {
+            println!("found {}", hash);
+            return password.clone();
+        }
+    }
+
     let pepper_bytes = pepper.unwrap_or("").as_bytes();
     let target_hash = hex_to_bytes(hash);
     let char_bytes: Vec<&[u8]> = char_set.iter().map(|s| s.as_bytes()).collect();
@@ -28,6 +46,7 @@ fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> Str
     for length in 1..=20 {
         // pretty much magical number
         let total: usize = base.pow(length as u32);
+
         let result = (0..total).into_par_iter().find_map_any(|idx| {
             if found.load(Ordering::Relaxed) {
                 return None;
@@ -43,6 +62,15 @@ fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> Str
             }
 
             let hash_result = Sha256::digest(&input);
+
+            /* if let Some(known_hashes) = known_hashes.clone() {
+                let mut known_hash_lock = known_hashes.lock().unwrap();
+                let string_input = String::from_utf8(input.clone());
+                if let Ok(string_input) = string_input {
+                    known_hash_lock.insert(format!("{:x}", hash_result), string_input);
+                }
+                drop(known_hash_lock);
+            } */
             if hash_result.as_slice() == target_hash {
                 found.store(true, Ordering::Relaxed);
                 let result = String::from_utf8(input);
@@ -58,7 +86,6 @@ fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> Str
         });
 
         if let Some(answer) = result {
-            println!("answer {}", answer);
             println!("took {:.2?}", now.elapsed());
             return answer;
         }

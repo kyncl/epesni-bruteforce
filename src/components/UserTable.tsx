@@ -45,9 +45,11 @@ export const UserTable = ({ users }: { users: User[] | null }) => {
                         text-sm text-slate-600 dark:text-slate-300 ">
                             {user.hash}
                         </div>
-                        <div className="p-4 text-sm text-slate-600 
-                        dark:text-slate-300 text-center">
-                            {user.password ?? "unknown"}
+                        <div className={`p-4 text-sm text-slate-600 
+                        dark:text-slate-300 text-center`}>
+                            <span className={`${user.password === "unknown" || user.password === null ? "text-red-500" : "text-green-500"}`}>
+                                {user.password ?? "unknown"}
+                            </span>
                         </div>
                     </div>
                 ))}

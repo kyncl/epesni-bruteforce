@@ -24,11 +24,14 @@ export const handleFile = ({ e, setUsers }: { e: ChangeEvent<HTMLInputElement>, 
             const isName = header === "name" || header === "username";
             const isHash = header === "hash";
             const isMail = header === "email";
+            const isPassword = header === "password";
+
 
             const extractedValue = value["v"];
             const username = (isName) ? extractedValue : null;
             const hash = (isHash) ? extractedValue : null;
             const mail = (isMail) ? extractedValue : null;
+            const password = (isPassword) ? extractedValue : null;
             let foundUser = users.find((user) => user.id == id) ?? null;
 
             if (!foundUser) {
@@ -37,7 +40,7 @@ export const handleFile = ({ e, setUsers }: { e: ChangeEvent<HTMLInputElement>, 
                     hash: hash,
                     email: mail,
                     username: username,
-                    password: null,
+                    password: password,
                 });
             }
             else {
@@ -47,6 +50,8 @@ export const handleFile = ({ e, setUsers }: { e: ChangeEvent<HTMLInputElement>, 
                     foundUser.hash = extractedValue;
                 else if (isMail)
                     foundUser.email = extractedValue;
+                else if (isPassword)
+                    foundUser.password = extractedValue;
             }
         }
         setUsers(users);
