@@ -1,5 +1,5 @@
 # Epesni bruteforce
-- Tauri app with React frontend for creating hashes of SHA-256 and bruteforcing them with dictionary support.
+- Tauri desktop app with React frontend for creating hashes of SHA-256 and bruteforcing them with dictionary support.
 - **DISCLAIMER**: This repo is only for educational purposes only. If you use it for something that is not legal, it's on you and I don't take any responsibility for it.
 
 # Requirements
