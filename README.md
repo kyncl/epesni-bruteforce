@@ -33,5 +33,5 @@ If you want to add some dictionaries that the bruteforce should try, put it insi
 |macOS|`$HOME`/Library/Caches/epesni-bruteforce/dictionaries|/Users/Alice/Library/Caches/epesni-bruteforce/dictionaries|
 |Windows|`{FOLDERID_LocalAppData}`|C:\Users\Alice\AppData\Local/epesni-bruteforce/dictionaries|
 
-And file should starts with `passdic__`
-If you want some dictionaries with password, checkout [SecLists](https://github.com/danielmiessler/SecLists).
+- And file should starts with `passdic__`
+- If you want some dictionaries with password, checkout [SecLists](https://github.com/danielmiessler/SecLists).

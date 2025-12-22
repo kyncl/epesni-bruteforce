@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CopyToClipboard } from "./CopyToClipboard";
-import { charSet } from "./App";
 import { unhashValue } from "../lib/unhashing";
+import { charSet } from "../utils/charset";
 
 
 export const UnhashInput = ({ classList }: { classList?: string }) => {
@@ -41,7 +41,7 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
                 </div>
             </div>
             <button
-                className="mt-5"
+                className="mt-5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={!canUnhash}
                 onClick={(_) => {
                     const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
@@ -52,7 +52,6 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
             >
                 Unhash
             </button>
-
         </div>
     );
 };

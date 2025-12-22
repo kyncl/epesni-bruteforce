@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserTable } from "./UserTable";
 import { FaUpload } from "react-icons/fa";
 import { User } from "../lib/user";
 import { handleFile } from "../lib/tableManagment";
 import { unhashUsers } from "../lib/unhashing";
-import { charSet } from "./App";
+import { charSet } from "../utils/charset";
 
 export const TableUnhashing = ({ classList }: { classList?: string }) => {
     const [users, setUsers] = useState<User[] | null>(null);
     const [pepper, setPepper] = useState("");
+    const [canUnhash, setCanUnhash] = useState(false);
+    const [didPutNewFile, setDidPutNewFile] = useState(false);
+
+    const unhashusersButtonHandle = async () => {
+        setCanUnhash(false);
+        await unhashUsers({ users, pepper, charSet, setUsers })
+        setCanUnhash(true);
+    }
+
+    useEffect(() => {
+        // This should start when user gives the file 
+        if ((users?.length ?? 0 !== 0) && didPutNewFile) {
+            setCanUnhash(true);
+            setDidPutNewFile(false);
+        }
+    }, [users]);
 
     return (
         <div className={classList}>
@@ -31,7 +47,7 @@ export const TableUnhashing = ({ classList }: { classList?: string }) => {
                                 type="file"
                                 id="file-upload"
                                 className="hidden"
-                                onChange={(e) => handleFile({ e, setUsers })}
+                                onChange={(e) => { handleFile({ e, setUsers }); setDidPutNewFile(true) }}
                             />
                             <label
                                 htmlFor="file-upload"
@@ -50,10 +66,10 @@ export const TableUnhashing = ({ classList }: { classList?: string }) => {
                             onClick={(_e) => {
                                 const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
                                 if (wantsUnhash)
-                                    unhashUsers({ users, pepper, charSet, setUsers })
+                                    unhashusersButtonHandle()
                             }}
                             className="w-full md:w-auto flex items-center justify-center gap-2 px-8 py-3.5 transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
-                            disabled={!users?.length}
+                            disabled={!canUnhash}
                         >
                             Unhash
                         </button>
