@@ -17,9 +17,8 @@ pub fn offset_to_char_indexes(offset: usize, base: usize) -> Vec<usize> {
 }
 
 pub fn incerment_digits(char_indexes: &mut Vec<usize>, highest_char_val: usize, char_num: usize) {
-    let mut i = 0;
     let mut should_add_digit = false;
-    for digit in char_indexes.iter_mut() {
+    for (i, digit) in char_indexes.iter_mut().enumerate() {
         if *digit < highest_char_val {
             *digit += 1;
             break;
@@ -29,7 +28,6 @@ pub fn incerment_digits(char_indexes: &mut Vec<usize>, highest_char_val: usize, 
                 should_add_digit = true;
             }
         }
-        i += 1;
     }
     if should_add_digit {
         char_indexes.push(0);

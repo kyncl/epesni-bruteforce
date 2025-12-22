@@ -1,4 +1,4 @@
-use crate::{dict_attack::dict_attack, unhashing::unhashing::unhash, user::User};
+use crate::{dict_attack::dict_attack, unhashing::unhash, user::User};
 use dirs::cache_dir;
 use log::info;
 use rayon::{
@@ -43,15 +43,13 @@ pub async fn unhash_table(
     let cache_files = fs::read_dir(&curr_dir);
     let mut dict_files = vec![];
     if let Ok(cache_files) = cache_files {
-        for file in cache_files {
-            if let Ok(file) = file {
-                // yes I'm menace >:)
-                if file.file_name().to_string_lossy().starts_with("passdic__") {
-                    info!("found dictionary: {}", file.path().to_string_lossy());
-                    let f = File::open(file.path());
-                    if let Ok(f) = f {
-                        dict_files.push(f);
-                    }
+        for file in cache_files.flatten() {
+            // yes I'm menace >:)
+            if file.file_name().to_string_lossy().starts_with("passdic__") {
+                info!("found dictionary: {}", file.path().to_string_lossy());
+                let f = File::open(file.path());
+                if let Ok(f) = f {
+                    dict_files.push(f);
                 }
             }
         }

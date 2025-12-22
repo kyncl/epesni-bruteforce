@@ -11,7 +11,7 @@ pub mod utils;
 
 #[tauri::command]
 async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
-    unhashing::unhashing::unhash(&hash, &char_set, pepper.as_deref())
+    unhashing::unhash(&hash, &char_set, pepper.as_deref())
 }
 
 #[tauri::command]

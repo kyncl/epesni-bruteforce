@@ -31,21 +31,19 @@ pub fn dict_attack(
     let pepper_bytes = pepper.unwrap_or("").as_bytes();
     let target_hash = hex_to_bytes(hash);
 
-    for line in file.split(b'\n') {
-        if let Ok(line) = line {
-            let mut input = Vec::with_capacity(pepper_bytes.len() + line.len());
-            input.extend_from_slice(pepper_bytes);
-            input.extend_from_slice(&line);
+    for line in file.split(b'\n').flatten() {
+        let mut input = Vec::with_capacity(pepper_bytes.len() + line.len());
+        input.extend_from_slice(pepper_bytes);
+        input.extend_from_slice(&line);
 
-            let hash_result = Sha256::digest(&input);
-            if hash_result.as_slice() == target_hash {
-                let result = String::from_utf8(input);
-                if let Ok(result) = result {
-                    println!("Found {}", result);
-                    return Ok(Some(result));
-                } else {
-                    return Err(anyhow!("Couldn't convert input"));
-                }
+        let hash_result = Sha256::digest(&input);
+        if hash_result.as_slice() == target_hash {
+            let result = String::from_utf8(input);
+            if let Ok(result) = result {
+                println!("Found {}", result);
+                return Ok(Some(result));
+            } else {
+                return Err(anyhow!("Couldn't convert input"));
             }
         }
     }
