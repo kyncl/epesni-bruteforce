@@ -3,6 +3,7 @@ import { User } from "../lib/user";
 import { downloadUsers } from "../lib/downloadUsers";
 
 export const UserTable = ({ users }: { users: User[] | null }) => {
+    // the tailwind done by claude ik wouldn't see that coming
     return (
         <div className="w-full max-w-6xl flex flex-col items-end mx-auto overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl shadow-zinc-200/50 dark:shadow-none">
             <button
@@ -47,7 +48,7 @@ export const UserTable = ({ users }: { users: User[] | null }) => {
                         </div>
                         <div className={`p-4 text-sm text-slate-600 
                         dark:text-slate-300 text-center`}>
-                            <span className={`${user.password === "unknown" || user.password === null ? "text-red-500" : "text-green-500"}`}>
+                            <span className={`${!user.password ? "text-red-500" : "text-green-500"}`}>
                                 {user.password ?? "unknown"}
                             </span>
                         </div>

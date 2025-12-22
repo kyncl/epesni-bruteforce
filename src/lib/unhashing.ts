@@ -29,27 +29,33 @@ export const unhashValue = async ({ hash, charSet, pepper }: unhashProps): Promi
 import { listen } from '@tauri-apps/api/event';
 
 export const unhashUsers = async ({ users, charSet, pepper, setUsers }: unhashUsersProps) => {
+    if (!users) return;
+
     /* known_hashes format is hash: password */
     const knownHashes = {
         "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918": "admin"
     };
 
-    const unlisten = await listen<{ index: number, password: string }>('unhash-progress', (event) => {
-        const { index, password } = event.payload;
-        setUsers(prevUsers => {
-            const newUsers = [...prevUsers ?? []];
-            if (newUsers[index]) {
-                newUsers[index] = { ...newUsers[index], password };
-            }
-            return newUsers;
+    const unlisten = await listen<{ userId: number, password: string }>('unhash-progress', (event) => {
+        const { userId, password } = event.payload;
+        setUsers(prevUser => {
+            if (!prevUser) return prevUser;
+            return prevUser.map(user =>
+                user.id === userId ? { ...user, password: password } : user
+            );
         });
     });
-    const finalUsers: User[] = await invoke("unhash_table", {
-        users: users,
-        charSet: charSet,
-        pepper: pepper,
-        knownHashes: knownHashes,
-    });
-    setUsers(finalUsers);
-    unlisten();
+    try {
+        const finalUsers: User[] = await invoke("unhash_table", {
+            users: users,
+            charSet: charSet,
+            pepper: pepper,
+            knownHashes: knownHashes,
+        });
+        setUsers(finalUsers);
+    } catch (error) {
+        console.error("Unhash failed:", error);
+    } finally {
+        unlisten();
+    }
 }

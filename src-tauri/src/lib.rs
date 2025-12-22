@@ -8,6 +8,7 @@ use crate::{
 };
 
 pub mod hashing;
+pub mod rainbow;
 pub mod user;
 
 #[tauri::command]

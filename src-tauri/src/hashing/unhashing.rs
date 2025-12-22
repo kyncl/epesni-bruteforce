@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -7,6 +6,7 @@ use std::{
     time::Instant,
 };
 
+use log::debug;
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
@@ -14,27 +14,14 @@ use crate::hashing::digit_manipulation::{incerment_digits, offset_to_char_indexe
 
 pub fn unhash(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
     println!("hash: {}", hash);
-    unhash_blocking(hash, &char_set, pepper.as_deref(), None)
+    unhash_blocking(hash, &char_set, pepper.as_deref())
 }
 
 pub fn unhash_table(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
-    unhash_blocking(hash, char_set, pepper, None)
+    unhash_blocking(hash, char_set, pepper)
 }
 
-fn unhash_blocking(
-    hash: &str,
-    char_set: &[String],
-    pepper: Option<&str>,
-    known_hashes: Option<Arc<std::sync::Mutex<HashMap<String, String>>>>,
-) -> String {
-    if let Some(known_hashes) = &known_hashes {
-        let known = known_hashes.lock().unwrap();
-        if let Some(password) = known.get(hash) {
-            println!("found {}", hash);
-            return password.clone();
-        }
-    }
-
+fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
     let pepper_bytes = pepper.unwrap_or("").as_bytes();
     let target_hash = hex_to_bytes(hash);
     let char_bytes: Vec<&[u8]> = char_set.iter().map(|s| s.as_bytes()).collect();
@@ -94,7 +81,7 @@ fn unhash_blocking(
     "unknown".to_string()
 }
 
-fn hex_to_bytes(hex: &str) -> [u8; 32] {
+pub fn hex_to_bytes(hex: &str) -> [u8; 32] {
     let mut bytes = [0u8; 32];
     for (i, chunk) in hex.as_bytes().chunks(2).enumerate() {
         bytes[i] = u8::from_str_radix(std::str::from_utf8(chunk).unwrap(), 16).unwrap();
