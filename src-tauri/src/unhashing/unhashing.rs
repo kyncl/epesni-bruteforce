@@ -9,7 +9,7 @@ use std::{
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
-use crate::utils::{ converting::hex_to_bytes};
+use crate::utils::converting::hex_to_bytes;
 
 pub fn unhash(hash: &str, char_set: &[String], pepper: Option<&str>) -> String {
     println!("hash: {}", hash);
@@ -46,7 +46,6 @@ fn unhash_blocking(hash: &str, char_set: &[String], pepper: Option<&str>) -> Str
                     }
 
                     let hash_result = Sha256::digest(&buffer);
-
                     if hash_result.as_slice() == target_hash {
                         found.store(true, Ordering::Relaxed);
                         let result = String::from_utf8(buffer.clone());

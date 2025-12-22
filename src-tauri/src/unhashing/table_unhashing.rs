@@ -36,8 +36,7 @@ pub async fn unhash_table(
 
     if let Ok(exist) = fs::exists(&curr_dir) {
         if !exist {
-            let err = fs::create_dir_all(&curr_dir);
-            panic!("{:?}", err);
+            let _ = fs::create_dir_all(&curr_dir);
         }
     }
 
@@ -102,20 +101,20 @@ pub async fn unhash_table(
                 set_password = result.clone();
             }
 
-            {
-                let mut known_hashes_lock = known_hashes.write().unwrap();
-                known_hashes_lock.insert(user_hash, set_password.clone());
-            }
-
             window
                 .emit(
                     "unhash-progress",
                     ProgressPayload {
                         user_id: user.id,
-                        password: set_password,
+                        password: set_password.clone(),
                     },
                 )
                 .unwrap();
+
+            {
+                let mut known_hashes_lock = known_hashes.write().unwrap();
+                known_hashes_lock.insert(user_hash, set_password);
+            }
         });
 
         println!("Whole table took {:.2?}", now.elapsed());
