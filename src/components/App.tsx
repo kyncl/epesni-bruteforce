@@ -26,10 +26,11 @@ function App() {
 
     return (
         <main className="flex items-center flex-col">
-            <h1 className="text-red-500 text-2xl mt-5 font-bold">
+            <h1 className="text-red-500 text-2xl mt-5 font-bold">Epesni bruteforce</h1>
+            <p>
                 Velice legalni bruteforce ktery neporusuje zakon
                 jelikoz je to pro studiini ucely lmao
-            </h1>
+            </p>
             <div>
                 <button className="m-2" onClick={() => { setSection(0) }}>Hash input</button>
                 <button className="m-2" onClick={() => { setSection(1) }}>Unhash input</button>

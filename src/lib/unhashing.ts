@@ -33,7 +33,7 @@ export const unhashUsers = async ({ users, charSet, pepper, setUsers }: unhashUs
 
     /* known_hashes format is hash: password */
     const knownHashes = {
-        "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918": "admin"
+        "3adc2bf68033e11261c160e0e1245a9e0a58d620aa3a6aa576641a5b94ed91fd": "cajovna-2025-admin"
     };
 
     const unlisten = await listen<{ userId: number, password: string }>('unhash-progress', (event) => {
@@ -45,17 +45,12 @@ export const unhashUsers = async ({ users, charSet, pepper, setUsers }: unhashUs
             );
         });
     });
-    try {
-        const finalUsers: User[] = await invoke("unhash_table", {
-            users: users,
-            charSet: charSet,
-            pepper: pepper,
-            knownHashes: knownHashes,
-        });
-        setUsers(finalUsers);
-    } catch (error) {
-        console.error("Unhash failed:", error);
-    } finally {
-        unlisten();
-    }
+    const finalUsers: User[] = await invoke("unhash_table", {
+        users: users,
+        charSet: charSet,
+        pepper: pepper,
+        knownHashes: knownHashes,
+    });
+    setUsers(finalUsers);
+    unlisten();
 }

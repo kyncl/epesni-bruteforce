@@ -1,23 +1,32 @@
+use anyhow::{anyhow, Result};
+use sha2::{Digest, Sha256};
 use std::{
     fs::File,
     io::{BufRead, BufReader},
     path::PathBuf,
 };
 
-use crate::hashing::unhashing::hex_to_bytes;
-use anyhow::{anyhow, Result};
-use sha2::{Digest, Sha256};
+use crate::utils::converting::hex_to_bytes;
 
 /// Returns found password with pepper
-/// If raibow_file is set it will be used
-/// Else if raibow_path is set it will try to read it
+/// If dict_file is set it will be used
+/// Else if dict_path is set it will try to read it
 /// Else error
-pub fn rainbow_it(
+pub fn dict_attack(
     hash: &str,
     pepper: Option<&str>,
-    rainbow_path: PathBuf,
+    dict_path: Option<PathBuf>,
+    dict_file: Option<&File>,
 ) -> Result<Option<String>> {
-    let file = File::open(&rainbow_path)?;
+    let file = {
+        if let Some(dict_path) = dict_path {
+            &File::open(&dict_path)?
+        } else if let Some(dict_file) = dict_file {
+            dict_file
+        } else {
+            return Err(anyhow!("Didn't give either file nor path"));
+        }
+    };
     let file = BufReader::new(file);
     let pepper_bytes = pepper.unwrap_or("").as_bytes();
     let target_hash = hex_to_bytes(hash);

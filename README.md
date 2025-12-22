@@ -13,7 +13,15 @@ export NO_STRIP=0
 cargo tauri build
 ./src-tauri/target/release/epesni-bruteforce
 ```
-other:
+if you want to squeeze even more performance you can try
+```bash
+export NO_STRIP=0
+RUSTFLAGS="-C target-cpu=native" cargo tauri build
+./src-tauri/target/release/epesni-bruteforce
+```
+**BEWARE** this will make build specifically to your CPU
+
+Other:
 tf should I know?
 
 # Using dictionaries

@@ -1,11 +1,17 @@
-use crate::{hashing::unhashing, rainbow::rainbow_it, user::User};
+use crate::{dict_attack::dict_attack, unhashing::unhashing::unhash, user::User};
 use dirs::cache_dir;
-use log::{debug, info};
+use log::info;
 use rayon::{
     iter::{IntoParallelRefIterator, IntoParallelRefMutIterator, ParallelIterator},
     slice::ParallelSliceMut,
 };
-use std::{collections::HashMap, env::current_dir, fs, path::Path, sync::Arc, time::Instant};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    path::Path,
+    sync::Arc,
+    time::Instant,
+};
 use tauri::{Emitter, Window};
 
 /// known_hashes format is hash: password
@@ -35,6 +41,23 @@ pub async fn unhash_table(
         }
     }
 
+    let cache_files = fs::read_dir(&curr_dir);
+    let mut dict_files = vec![];
+    if let Ok(cache_files) = cache_files {
+        for file in cache_files {
+            if let Ok(file) = file {
+                // yes I'm menace >:)
+                if file.file_name().to_string_lossy().starts_with("passdic__") {
+                    info!("found dictionary: {}", file.path().to_string_lossy());
+                    let f = File::open(file.path());
+                    if let Ok(f) = f {
+                        dict_files.push(f);
+                    }
+                }
+            }
+        }
+    }
+
     tokio::task::spawn_blocking(move || {
         users_without_pass.par_iter_mut().for_each(|user| {
             if user.hash.is_none() || user.password.is_some() {
@@ -48,42 +71,40 @@ pub async fn unhash_table(
                 known_hashes_lock.get(&user_hash).cloned()
             };
 
-            let mut res = None;
-            let cache_files = fs::read_dir(&curr_dir);
-            if let Ok(cache_files) = cache_files {
-                for file in cache_files {
-                    if let Ok(file) = file {
-                        // yes I'm menace >:)
-                        if file.file_name().to_string_lossy().starts_with("passdic__") {
-                            info!("trying {}", file.path().to_string_lossy());
-                            let table = rainbow_it(&user_hash, pepper.as_deref(), file.path());
-                            if let Ok(Some(rainbow)) = table {
-                                res = Some(rainbow);
-                                break;
-                            }
+            // Skip it if it already find inside known hashes
+            let dictionary_attack_result = {
+                if known_password.is_some() {
+                    None
+                } else {
+                    dict_files.par_iter().find_map_first(|file| {
+                        let table = dict_attack(&user_hash, pepper.as_deref(), None, Some(file));
+                        if let Ok(Some(rainbow)) = table {
+                            Some(rainbow)
+                        } else {
+                            None
                         }
-                    }
+                    })
                 }
-            }
+            };
 
-            if let Some(rainbow) = res {
-                info!("Found in rainbow table {}", rainbow);
-                user.password = Some(rainbow.clone());
-                set_password = rainbow;
+            if let Some(dictionary_attack) = dictionary_attack_result {
+                info!("Found in dictionary table {}", dictionary_attack);
+                user.password = Some(dictionary_attack.clone());
+                set_password = dictionary_attack;
             } else if let Some(password) = known_password {
                 info!("Found in known table");
                 user.password = Some(password.clone());
                 set_password = password;
             } else {
                 info!("Unhashing...");
-                let result = unhashing::unhash_table(&user_hash, &char_set, pepper.as_deref());
+                let result = unhash(&user_hash, &char_set, pepper.as_deref());
                 user.password = Some(result.clone());
                 set_password = result.clone();
+            }
 
-                {
-                    let mut known_hashes_lock = known_hashes.write().unwrap();
-                    known_hashes_lock.insert(user_hash, result);
-                }
+            {
+                let mut known_hashes_lock = known_hashes.write().unwrap();
+                known_hashes_lock.insert(user_hash, set_password.clone());
             }
 
             window
@@ -105,6 +126,7 @@ pub async fn unhash_table(
     .await
     .expect("Blocking task panicked")
 }
+
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ProgressPayload {

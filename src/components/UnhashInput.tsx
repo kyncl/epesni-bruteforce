@@ -8,10 +8,13 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
     const [result, setResult] = useState("");
     const [hash, setHash] = useState<string | null>(null);
     const [pepper, setPepper] = useState("");
+    const [canUnhash, setCanUnhash] = useState(true);
 
     const unhashHandle = async () => {
+        setCanUnhash(false);
         const unhash = await unhashValue({ hash, pepper, charSet });
         setResult(unhash ?? "");
+        setCanUnhash(true);
     }
 
     return (
@@ -37,12 +40,16 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
                     <CopyToClipboard text={result} customClass="absolute right-1" />
                 </div>
             </div>
-            <button className="mt-5" onClick={(_) => {
-                const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
-                if (wantsUnhash) {
-                    unhashHandle();
-                }
-            }}>
+            <button
+                className="mt-5"
+                disabled={!canUnhash}
+                onClick={(_) => {
+                    const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
+                    if (wantsUnhash) {
+                        unhashHandle();
+                    }
+                }}
+            >
                 Unhash
             </button>
 

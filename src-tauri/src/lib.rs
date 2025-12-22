@@ -2,18 +2,16 @@ use std::collections::HashMap;
 
 use tauri::Window;
 
-use crate::{
-    hashing::{table_unhashing, unhashing},
-    user::User,
-};
+use crate::{unhashing::table_unhashing, user::User};
 
-pub mod hashing;
-pub mod rainbow;
+pub mod dict_attack;
+pub mod unhashing;
 pub mod user;
+pub mod utils;
 
 #[tauri::command]
 async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
-    unhashing::unhash(&hash, &char_set, pepper.as_deref())
+    unhashing::unhashing::unhash(&hash, &char_set, pepper.as_deref())
 }
 
 #[tauri::command]
