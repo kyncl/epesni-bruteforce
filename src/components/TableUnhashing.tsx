@@ -4,17 +4,22 @@ import { FaUpload } from "react-icons/fa";
 import { User } from "../lib/user";
 import { handleFile } from "../lib/tableManagment";
 import { unhashUsers } from "../lib/unhashing";
-import { charSet } from "../utils/charset";
+import { CharSetSelector } from "./CharSetSelector";
+import { Pepper } from "./Pepper";
 
 export const TableUnhashing = ({ classList }: { classList?: string }) => {
     const [users, setUsers] = useState<User[] | null>(null);
-    const [pepper, setPepper] = useState("");
+
+    const [frontPepper, setFrontPepper] = useState("");
+    const [endPepper, setEndPepper] = useState("");
+
     const [canUnhash, setCanUnhash] = useState(false);
     const [didPutNewFile, setDidPutNewFile] = useState(false);
+    const [charSet, setCharSet] = useState<string[]>([]);
 
     const unhashusersButtonHandle = async () => {
         setCanUnhash(false);
-        await unhashUsers({ users, pepper, charSet, setUsers })
+        await unhashUsers({ users, frontPepper, endPepper, charSet, setUsers })
         setCanUnhash(true);
     }
 
@@ -31,27 +36,27 @@ export const TableUnhashing = ({ classList }: { classList?: string }) => {
             <div className="flex items-center flex-col mt-5">
                 <h2 className="sm:text-3xl text-lg text-green-500">Unhash table</h2>
                 <p className="text-lg">As long as it has email and password it will do the trick</p>
-                <div className="mt-5 flex items-center flex-col">
-                    <h2 className="sm:text-2xl text-xs">Known pepper</h2>
-                    <input type="text" className="w-full md:w-3xl mt-2"
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            if (val) setPepper(val);
-                        }} />
-                </div>
-
+                <CharSetSelector setCharSet={setCharSet} />
+                <Pepper setFrontPepper={setFrontPepper} setEndPepper={setEndPepper} />
                 <div className="max-w-6xl mx-auto m-8 p-6 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="relative group w-full md:w-auto">
+                        <div className="relative group w-full md:w-auto
+                        rounded-xl border-2 border-dashed border-zinc-300 
+                        dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 
+                        cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-400 
+                        focus:border-indigo-500 dark:focus:border-indigo-400
+                        hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all 
+                        ">
                             <input
                                 type="file"
                                 id="file-upload"
-                                className="hidden"
+                                className="block w-full h-full absolute top-0 left-0 cursor-pointer 
+                                text-transparent bg-transparent"
                                 onChange={(e) => { handleFile({ e, setUsers }); setDidPutNewFile(true) }}
                             />
                             <label
                                 htmlFor="file-upload"
-                                className="flex items-center gap-3 px-5 py-3 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 cursor-pointer hover:border-indigo-500 dark:hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all group"
+                                className="flex items-center gap-3 px-5 py-3 group"
                             >
                                 <div className="p-2 rounded-lg bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 shadow-sm group-hover:text-indigo-600">
                                     <FaUpload className="w-4 h-4" />

@@ -1,18 +1,24 @@
 import { useState } from "react";
 import { CopyToClipboard } from "./CopyToClipboard";
 import { unhashValue } from "../lib/unhashing";
-import { charSet } from "../utils/charset";
+import { CharSetSelector } from "./CharSetSelector";
+import { isValidSHA256 } from "../lib/shaValidation";
+import { Pepper } from "./Pepper";
 
 
 export const UnhashInput = ({ classList }: { classList?: string }) => {
     const [result, setResult] = useState("");
     const [hash, setHash] = useState<string | null>(null);
-    const [pepper, setPepper] = useState("");
+
+    const [frontPepper, setFrontPepper] = useState("");
+    const [endPepper, setEndPepper] = useState("");
+
     const [canUnhash, setCanUnhash] = useState(true);
+    const [charSet, setCharSet] = useState<string[]>([]);
 
     const unhashHandle = async () => {
         setCanUnhash(false);
-        const unhash = await unhashValue({ hash, pepper, charSet });
+        const unhash = await unhashValue({ hash, frontPepper, endPepper, charSet });
         setResult(unhash ?? "");
         setCanUnhash(true);
     }
@@ -25,14 +31,8 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
                     setHash(event.target.value);
                 }}>
             </textarea>
-            <div className="mt-5 flex items-center flex-col">
-                <h2 className="sm:text-2xl text-xs">Known pepper</h2>
-                <input type="text" className="w-full md:w-3xl mt-2"
-                    onChange={(e) => {
-                        const val = e.target.value;
-                        if (val) setPepper(val)
-                    }} />
-            </div>
+            <CharSetSelector setCharSet={setCharSet} />
+            <Pepper setFrontPepper={setFrontPepper} setEndPepper={setEndPepper} />
             <div className="flex items-center flex-col mt-5">
                 <h2 className="sm:text-2xl text-xs">Result</h2>
                 <div className="w-full md:w-fit relative mt-2 flex items-center justify-center">
@@ -44,9 +44,14 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
                 className="mt-5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={!canUnhash}
                 onClick={(_) => {
-                    const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
-                    if (wantsUnhash) {
-                        unhashHandle();
+                    if (!isValidSHA256(result)) {
+                        alert("Your input is not valid sha256 hash");
+                    }
+                    else {
+                        const wantsUnhash = confirm("Are you sure you want to unhash. This operation may be really hard on your device");
+                        if (wantsUnhash) {
+                            unhashHandle();
+                        }
                     }
                 }}
             >

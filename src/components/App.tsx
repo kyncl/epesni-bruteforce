@@ -24,6 +24,7 @@ function App() {
                 <button className="m-2" onClick={() => { setSection(1) }}>Unhash input</button>
                 <button className="m-2" onClick={() => { setSection(2) }}>Table unhashing</button>
             </div>
+
             <HashInput classList={`${section === 0 ? "" : "hidden"}`} />
             <UnhashInput classList={`${section === 1 ? "" : "hidden"}`} />
             <TableUnhashing classList={`${section === 2 ? "" : "hidden"}`} />

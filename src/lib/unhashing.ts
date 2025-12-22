@@ -1,34 +1,41 @@
 import { invoke } from "@tauri-apps/api/core";
 import { User } from "./user";
 import { Dispatch, SetStateAction } from "react";
+import { listen } from '@tauri-apps/api/event';
+import { isValidSHA256 } from "./shaValidation";
 
 interface unhashUsersProps {
     users: User[] | null,
     setUsers: Dispatch<SetStateAction<User[] | null>>,
     charSet: string[],
-    pepper: string
+    frontPepper: string,
+    endPepper: string | null
 }
 
 interface unhashProps {
     hash: string | null,
     charSet: string[],
-    pepper: string,
+    frontPepper: string | null,
+    endPepper: string | null
 }
 
 
-export const unhashValue = async ({ hash, charSet, pepper }: unhashProps): Promise<string | null> => {
+export const unhashValue = async ({ hash, charSet, frontPepper, endPepper }: unhashProps): Promise<string | null> => {
     if (!hash) return null;
+    if (!isValidSHA256(hash)) {
+        return null;
+    }
+
     const unhash: string = await invoke("unhash", {
         hash: hash,
         charSet: charSet,
-        pepper: pepper
+        frontPepper: frontPepper,
+        endPepper: endPepper
     });
     return unhash
 }
 
-import { listen } from '@tauri-apps/api/event';
-
-export const unhashUsers = async ({ users, charSet, pepper, setUsers }: unhashUsersProps) => {
+export const unhashUsers = async ({ users, charSet, frontPepper, endPepper, setUsers }: unhashUsersProps) => {
     if (!users) return;
 
     /* known_hashes format is hash: password */
@@ -48,7 +55,8 @@ export const unhashUsers = async ({ users, charSet, pepper, setUsers }: unhashUs
     const finalUsers: User[] = await invoke("unhash_table", {
         users: users,
         charSet: charSet,
-        pepper: pepper,
+        frontPepper: frontPepper,
+        endPepper: endPepper,
         knownHashes: knownHashes,
     });
     setUsers(finalUsers);

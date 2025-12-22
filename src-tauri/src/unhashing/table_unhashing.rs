@@ -1,4 +1,6 @@
-use crate::{dict_attack::dict_attack, unhashing::unhash, user::User};
+use crate::{
+    dict_attack::dict_attack, unhashing::unhash, user::User, utils::validation::is_sha256,
+};
 use dirs::cache_dir;
 use log::info;
 use rayon::{
@@ -19,7 +21,8 @@ pub async fn unhash_table(
     window: Window,
     users: Vec<User>,
     char_set: Vec<String>,
-    pepper: Option<String>,
+    front_pepper: Option<String>,
+    end_pepper: Option<String>,
     known_hashes: HashMap<String, String>,
 ) -> Vec<User> {
     let known_hashes = Arc::new(std::sync::RwLock::new(known_hashes));
@@ -62,6 +65,19 @@ pub async fn unhash_table(
             }
 
             let user_hash = user.hash.clone().unwrap();
+            if !is_sha256(&user_hash) {
+                window
+                    .emit(
+                        "unhash-progress",
+                        ProgressPayload {
+                            user_id: user.id,
+                            password: "invalid".to_string(),
+                        },
+                    )
+                    .unwrap();
+                return;
+            }
+
             let set_password: String;
             let known_password = {
                 let known_hashes_lock = known_hashes.read().unwrap();
@@ -74,7 +90,8 @@ pub async fn unhash_table(
                     None
                 } else {
                     dict_files.par_iter().find_map_first(|file| {
-                        let table = dict_attack(&user_hash, pepper.as_deref(), None, Some(file));
+                        let table =
+                            dict_attack(&user_hash, front_pepper.as_deref(), None, Some(file));
                         if let Ok(Some(rainbow)) = table {
                             Some(rainbow)
                         } else {
@@ -94,7 +111,12 @@ pub async fn unhash_table(
                 set_password = password;
             } else {
                 info!("Unhashing...");
-                let result = unhash(&user_hash, &char_set, pepper.as_deref());
+                let result = unhash(
+                    &user_hash,
+                    &char_set,
+                    front_pepper.as_deref(),
+                    end_pepper.as_deref(),
+                );
                 user.password = Some(result.clone());
                 set_password = result.clone();
             }

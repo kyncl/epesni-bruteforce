@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use log::info;
 use sha2::{Digest, Sha256};
 use std::{
     fs::File,
@@ -40,7 +41,9 @@ pub fn dict_attack(
         if hash_result.as_slice() == target_hash {
             let result = String::from_utf8(input);
             if let Ok(result) = result {
-                println!("Found {}", result);
+                let info = format!("Found: {} from: {:x}", result, hash_result);
+                println!("{}", info);
+                info!("{}", info);
                 return Ok(Some(result));
             } else {
                 return Err(anyhow!("Couldn't convert input"));

@@ -14,6 +14,22 @@
     -webkit-text-size-adjust: 100%;
 }
 
+input[type='file'] {
+    color: rgba(0, 0, 0, 0);
+    background-color: transparent;
+}
+
+/*
+input[type='file']:hover {
+    border-color: var(--color-indigo-500);
+}
+
+@media (prefers-color-scheme: dark) {
+    input[type='file'] {
+        border-color: var(--color-zinc-700);
+    }
+} */
+
 .container {
     margin: 0;
     padding-top: 10vh;
@@ -67,11 +83,6 @@ button:hover {
 button:active {
     border-color: #396cd8;
     background-color: #e8e8e8;
-}
-
-input,
-button {
-    outline: none;
 }
 
 #greet-input {

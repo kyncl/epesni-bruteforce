@@ -10,8 +10,18 @@ pub mod user;
 pub mod utils;
 
 #[tauri::command]
-async fn unhash(hash: String, char_set: Vec<String>, pepper: Option<String>) -> String {
-    unhashing::unhash(&hash, &char_set, pepper.as_deref())
+async fn unhash(
+    hash: String,
+    char_set: Vec<String>,
+    front_pepper: Option<String>,
+    end_pepper: Option<String>,
+) -> String {
+    unhashing::unhash(
+        &hash,
+        &char_set,
+        front_pepper.as_deref(),
+        end_pepper.as_deref(),
+    )
 }
 
 #[tauri::command]
@@ -19,10 +29,19 @@ async fn unhash_table(
     window: Window,
     users: Vec<User>,
     char_set: Vec<String>,
-    pepper: Option<String>,
+    front_pepper: Option<String>,
+    end_pepper: Option<String>,
     known_hashes: HashMap<String, String>,
 ) -> Vec<User> {
-    table_unhashing::unhash_table(window, users, char_set, pepper, known_hashes).await
+    table_unhashing::unhash_table(
+        window,
+        users,
+        char_set,
+        front_pepper,
+        end_pepper,
+        known_hashes,
+    )
+    .await
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
