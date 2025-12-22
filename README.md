@@ -5,8 +5,10 @@
 # Requirements
 - cargo
 - pnpm
+# How to compile
 for linux:
 ```bash
+pnpm install
 export NO_STRIP=0
 cargo tauri build
 ./src-tauri/target/release/epesni-bruteforce
