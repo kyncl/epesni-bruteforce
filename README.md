@@ -35,3 +35,21 @@ If you want to add some dictionaries that the bruteforce should try, put it insi
 
 - And file should starts with `passdic__`
 - If you want some dictionaries with password, checkout [SecLists](https://github.com/danielmiessler/SecLists).
+
+# Running tests
+## Vitest
+If you want to try vitest to test out unhashing, you may by:
+```bash 
+pnpm vitest
+```
+**BUT** this is rn completely useless, because all of the heavy operations are happening inside rust backend so 
+ofc pnpm doesn't know how to setup the frontend and backend connection for testing. So what to do?
+## Cargo
+Thankfully cargo is op so you can run tests by cargo:
+```bash
+cargo test
+```
+these operations can be really heavy so it's recommended to run tests with release version 
+```bash
+cargo test --release
+```

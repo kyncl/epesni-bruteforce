@@ -4,6 +4,9 @@ use tauri::Window;
 
 use crate::{unhashing::table_unhashing, user::User};
 
+#[cfg(test)]
+pub mod test;
+
 pub mod dict_attack;
 pub mod unhashing;
 pub mod user;
