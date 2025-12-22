@@ -8,8 +8,6 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-password-dicts/
-password-dicts/**
 dist
 dist-ssr
 *.local
