@@ -44,7 +44,7 @@ export const UnhashInput = ({ classList }: { classList?: string }) => {
                 className="mt-5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
                 disabled={!canUnhash}
                 onClick={(_) => {
-                    if (!isValidSHA256(result)) {
+                    if (hash && !isValidSHA256(hash)) {
                         alert("Your input is not valid sha256 hash");
                     }
                     else {

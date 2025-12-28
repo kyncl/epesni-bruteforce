@@ -67,6 +67,7 @@ pub async fn unhash_table(
             let user_hash = user.hash.clone().unwrap();
             if !is_sha256(&user_hash) {
                 window
+                    .clone()
                     .emit(
                         "unhash-progress",
                         ProgressPayload {
@@ -122,6 +123,7 @@ pub async fn unhash_table(
             }
 
             window
+                .clone()
                 .emit(
                     "unhash-progress",
                     ProgressPayload {

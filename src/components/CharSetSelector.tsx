@@ -40,12 +40,16 @@ const CharCheckBox = ({ name, specificCharSet, setCharSet, shouldBeOnStart }: ch
     }, [enabled]);
 
     return (
-        <div className="flex gap-2 pr-5">
+        <button className="flex gap-2 pr-5 
+        bg-transparent! shadow-none!"
+            onClick={(_) => { setEnabled(!enabled) }}>
             <div className="bg-transparent switch">
-                <input type="checkbox" checked={enabled} onChange={(_) => { setEnabled(!enabled) }} />
+                <input type="checkbox" className="z-50"
+                    disabled
+                    checked={enabled} />
                 <span className="slider round"></span>
             </div>
             {name}
-        </div>
+        </button>
     )
 }
